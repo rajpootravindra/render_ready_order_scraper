@@ -1,0 +1,5 @@
+Flask
+selenium
+gspread
+oauth2client
+requests
