@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from fetch_orders import scrape_orders_for_date
+from fetch_orders import fetch_orders_for_date
 import os
 import logging
 
@@ -17,7 +17,7 @@ def index():
         target_date = request.form.get('target_date')
         try:
             logs.append("Starting order scraping for date: " + target_date)
-            result_logs = scrape_orders_for_date(target_date)
+            result_logs = fetch_orders_for_date(target_date)
             logs.extend(result_logs)
             message = "✅ Process completed. Check logs for details."
         except Exception as e:
