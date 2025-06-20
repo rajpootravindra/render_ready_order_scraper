@@ -35,9 +35,15 @@ def login_to_website(driver):
         username_input = wait.until(EC.presence_of_element_located((By.NAME, "txtUser")))
         password_input = driver.find_element(By.NAME, "txtPassword")
         login_button = driver.find_element(By.ID, "btnLogin")
-        username_input.send_keys("admin")
-        password_input.send_keys("FoodZoid9080#")
+
+        # Use environment variables
+        username = os.getenv("ADMIN_USERNAME")
+        password = os.getenv("ADMIN_PASSWORD")
+
+        username_input.send_keys(username)
+        password_input.send_keys(password)
         login_button.click()
+
         wait.until(EC.presence_of_element_located((By.ID, "kt_body")))
         driver.get("https://admin.foodzoid.in/order-history")
         wait.until(EC.presence_of_element_located((By.ID, "example_filter")))
