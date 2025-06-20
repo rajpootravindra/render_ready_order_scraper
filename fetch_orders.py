@@ -1,4 +1,3 @@
-
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -14,7 +13,6 @@ def setup_google_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     credentials_dict = json.loads(os.environ["GOOGLE_SHEET_CREDS"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
-
     client = gspread.authorize(creds)
     sheet = client.open("June2025").sheet1
     return sheet
@@ -36,7 +34,6 @@ def login_to_website(driver):
         password_input = driver.find_element(By.NAME, "txtPassword")
         login_button = driver.find_element(By.ID, "btnLogin")
 
-        # Use environment variables
         username = os.getenv("ADMIN_USERNAME")
         password = os.getenv("ADMIN_PASSWORD")
 
@@ -95,7 +92,7 @@ def scrape_orders_for_date(driver, target_date):
                             date = cols[2].text.split(" ")[0]
                             delivery_boy = cols[3].text
                             net_amount = round(int(float(cols[4].text)))
-                            product_value = round(int(net_amount)) if int(net_amount) > 499 else round((int(net_amount)-30))
+                            product_value = round(int(net_amount)) if int(net_amount) > 499 else round((int(net_amount) - 30))
                             payable_amount = round((int(product_value) * 17 / 20))
                             profit = round((int(product_value) * 3 / 20) + 30)
                             data.append([sn, order_id, date, shop_name, net_amount, product_value, payable_amount, profit, delivery_boy])
@@ -141,21 +138,44 @@ def append_new_orders(sheet, existing_orders, new_data):
     new_orders_count = len(new_orders)
     for order in new_orders:
         sheet.append_row(order)
-    print(f"{len(new_orders)} new orders added to the sheet.")
+    print(f"{new_orders_count} new orders added to the sheet.")
     if new_orders_count > 0:
         send_message(new_orders_count)
 
-def run_order_scraper(target_date):
+def fetch_orders_for_date(target_date):
+    logs = []
+    logs.append(f"📅 Starting order fetch for {target_date}")
+
     sheet = setup_google_sheet()
+    logs.append("✅ Google Sheet setup complete.")
+
     existing_orders = get_existing_orders(sheet)
+    logs.append(f"🔍 Found {len(existing_orders)} existing orders in sheet.")
+
     options = webdriver.ChromeOptions()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     driver = webdriver.Chrome(options=options)
+
     try:
+        logs.append("🌐 Launching browser and logging in...")
         login_to_website(driver)
+        logs.append("✅ Login successful.")
+
+        logs.append(f"📦 Scraping data for {target_date}...")
         new_data = scrape_orders_for_date(driver, target_date)
+        logs.append(f"📋 Retrieved {len(new_data)} delivered orders.")
+
+        logs.append("📝 Appending new orders to Google Sheet...")
         append_new_orders(sheet, existing_orders, new_data)
+        logs.append("✅ Orders appended successfully.")
+    except Exception as e:
+        error_message = f"❌ Error: {str(e)}"
+        print(error_message)
+        logs.append(error_message)
     finally:
         driver.quit()
+        logs.append("🛑 Browser closed.")
+
+    return logs
