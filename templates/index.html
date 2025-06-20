@@ -43,17 +43,23 @@
         <input type="date" class="form-control text-center" name="target_date" required>
       </div>
       <div class="text-center">
-        <button type="submit" class="btn btn-primary">🚀 Fetch Orders</button>
+        <button type="submit" class="btn btn-primary"> Fetch Orders</button>
       </div>
     </form>
-    <div class="mt-4">
-      <h5>Status:</h5>
-      <p class="text-success">{{ message }}</p>
-      {% if logs %}
-        <h5>Logs:</h5>
-        <textarea readonly class="form-control">{{ logs|join('\\n') }}</textarea>
-      {% endif %}
-    </div>
+   <div class="text-center mt-4">
+  <h5>🔍 Scraper Logs:</h5>
+  <pre id="log-box" style="height: 300px; overflow-y: scroll; background: #f8f9fa; padding: 10px; border: 1px solid #ccc;"></pre>
+</div>
+
+<script>
+  setInterval(() => {
+    fetch("/logs")
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById("log-box").innerText = data;
+      });
+  }, 3000);  // Every 3 seconds
+</script>
   </div>
 </body>
 </html>

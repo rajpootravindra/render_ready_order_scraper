@@ -1,29 +1,23 @@
-from flask import Flask, render_template, request
-from fetch_orders import fetch_orders_for_date
-import os
-import logging
+
+from flask import Flask, render_template, request, flash, redirect
+from threading import Thread
+from fetch_orders import run_order_scraper
 
 app = Flask(__name__)
-
-# Setup logging to a file and console
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger()
+app.secret_key = 'some-secret-key'
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
-    message = ""
-    logs = []
     if request.method == 'POST':
-        target_date = request.form.get('target_date')
-        try:
-            logs.append("Starting order scraping for date: " + target_date)
-            result_logs = fetch_orders_for_date(target_date)
-            logs.extend(result_logs)
-            message = "✅ Process completed. Check logs for details."
-        except Exception as e:
-            message = f"❌ Error occurred: {e}"
-            logs.append(str(e))
-    return render_template('index.html', message=message, logs=logs)
-
+        date = request.form['target_date']
+        Thread(target=run_order_scraper, args=(date,)).start()
+        flash('Order scraping started!', 'success')
+        return redirect('/')
+    return render_template('index.html')
+@app.route("/logs")
+def get_logs():
+    with open("log.txt", "r") as f:
+        content = f.read()
+    return content
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
