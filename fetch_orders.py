@@ -7,10 +7,11 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from selenium.common.exceptions import StaleElementReferenceException
 import requests
+import os
 
 def setup_google_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("credentials.json", scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name(os.environ["GOOGLE_SHEET_CREDS"])
     client = gspread.authorize(creds)
     sheet = client.open("June2025").sheet1
     return sheet
