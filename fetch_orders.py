@@ -16,7 +16,7 @@ def setup_google_sheet():
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
 
     client = gspread.authorize(creds)
-    sheet = client.open("June2025").sheet1
+    sheet = client.open("July2025").sheet1
     return sheet
 
 def get_existing_orders(sheet):
