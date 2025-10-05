@@ -79,6 +79,7 @@ def scrape_orders_for_date(driver, target_date):
     data = []
     page_number = 1
     max_retries = 3
+    sn = 1
     while True:
         try:
             print(f"Scraping page {page_number}...")
@@ -86,7 +87,6 @@ def scrape_orders_for_date(driver, target_date):
             while retry_count < max_retries:
                 try:
                     rows = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "table tbody tr")))
-                    sn = 1
                     for row in rows:
                         cols = row.find_elements(By.TAG_NAME, "td")
                         if len(cols) > 3 and "Order Delivered" in cols[7].text:
@@ -94,11 +94,24 @@ def scrape_orders_for_date(driver, target_date):
                             shop_name = cols[1].text
                             date = cols[2].text.split(" ")[0]
                             delivery_boy = cols[3].text
-                            net_amount = round(int(float(cols[4].text)))
-                            product_value = round(int(net_amount)) if int(net_amount) > 499 else round((int(net_amount)-30))
-                            payable_amount = round((int(product_value) * 17 / 20))
-                            profit = round((int(product_value) * 3 / 20) + 30)
-                            data.append([sn, order_id, date, shop_name, net_amount, product_value, payable_amount, profit, delivery_boy])
+                            net_amount = round(float(cols[4].text))
+                            delivery_charge = 0 if net_amount > 499 else 30
+                            
+                            product_value = net_amount - delivery_charge
+                            payable_amount = round(product_value * 0.85) # (17 / 20)
+                            profit = round((product_value * 0.15) + delivery_charge) # (3 / 20)
+                            
+                            data.append([
+                                sn,
+                                order_id,
+                                date,
+                                shop_name,
+                                net_amount,
+                                product_value,
+                                payable_amount,
+                                profit,
+                                delivery_boy
+                            ])
                             sn += 1
                     break
                 except StaleElementReferenceException:
