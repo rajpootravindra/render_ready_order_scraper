@@ -16,7 +16,7 @@ def setup_google_sheet():
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
 
     client = gspread.authorize(creds)
-    sheet = client.open("December2025").sheet1
+    sheet = client.open("January2025").sheet1
     return sheet
 
 def get_existing_orders(sheet):
@@ -138,7 +138,7 @@ def scrape_orders_for_date(driver, target_date):
 
 def send_message(new_orders_count):
     message_text = f"  Orders Added to The Sheet {new_orders_count} ."
-    url = "http://13.200.122.9:8081/sendMessage"
+    url = "http://api.foodzoid.in:8081/sendMessage"
     payload = {
         "TYPE": "GROUP",
         "SenderId": "",
