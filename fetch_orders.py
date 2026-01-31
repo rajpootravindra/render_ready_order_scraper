@@ -6,7 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from selenium.common.exceptions import StaleElementReferenceException
-import requests
+# import requests
 import os
 import json
 
@@ -16,7 +16,7 @@ def setup_google_sheet():
     creds = ServiceAccountCredentials.from_json_keyfile_dict(credentials_dict, scope)
 
     client = gspread.authorize(creds)
-    sheet = client.open("January2025").sheet1
+    sheet = client.open("February2026").sheet1
     return sheet
 
 def get_existing_orders(sheet):
@@ -136,18 +136,18 @@ def scrape_orders_for_date(driver, target_date):
             break
     return data
 
-def send_message(new_orders_count):
-    message_text = f"  Orders Added to The Sheet {new_orders_count} ."
-    url = "http://api.foodzoid.in:8081/sendMessage"
-    payload = {
-        "TYPE": "GROUP",
-        "SenderId": "",
-        "message": {
-            "text": message_text
-        }
-    }
-    response = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
-    print("Response:", response.status_code, response.text)
+# def send_message(new_orders_count):
+#     message_text = f"  Orders Added to The Sheet {new_orders_count} ."
+#     url = "http://api.foodzoid.in:8081/sendMessage"
+#     payload = {
+#         "TYPE": "GROUP",
+#         "SenderId": "",
+#         "message": {
+#             "text": message_text
+#         }
+#     }
+    # response = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
+    # print("Response:", response.status_code, response.text)
 
 def append_new_orders(sheet, existing_orders, new_data):
     new_orders = [row for row in new_data if str(row[1]) not in existing_orders]
